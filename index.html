@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permissionless Merch</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-green: #39FF14;
+        }
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #000;
+            color: var(--neon-green);
+        }
+        .neubrutalism {
+            border: 4px solid var(--neon-green);
+            box-shadow: 8px 8px 0 0 var(--neon-green);
+            transition: all 0.2s ease;
+        }
+        .neubrutalism:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0 0 var(--neon-green);
+        }
+        .neon-text {
+            text-shadow: 0 0 10px var(--neon-green);
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="min-h-screen">
+        <!-- Navigation -->
+        <nav class="p-6 mb-8 border-b-4 border-[#39FF14]">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-4xl font-bold neon-text">PERMISSIONLESS</h1>
+                <div class="flex gap-4">
+                    <button class="neubrutalism px-4 py-2 text-lg" @click="cartOpen = true">
+                        <i class="bi bi-cart3"></i> Cart ({{cartItems.length}})
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="container mx-auto px-4">
+            <!-- Products Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                <div v-for="product in products" :key="product.id" class="neubrutalism p-4 bg-black">
+                    <img :src="product.image" :alt="product.name" class="w-full h-64 object-cover mb-4">
+                    <h3 class="text-2xl font-bold mb-2">{{product.name}}</h3>
+                    <p class="mb-4">{{product.description}}</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xl font-bold">${{product.price}}</span>
+                        <button @click="addToCart(product)" class="neubrutalism px-4 py-2">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Cart Sidebar -->
+        <div v-if="cartOpen" class="fixed inset-0 bg-black bg-opacity-50 z-50">
+            <div class="absolute right-0 top-0 h-full w-full md:w-96 bg-black border-l-4 border-[#39FF14] p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold neon-text">Your Cart</h2>
+                    <button @click="cartOpen = false" class="text-2xl">&times;</button>
+                </div>
+                <div v-if="cartItems.length === 0" class="text-center py-8">
+                    Cart is empty
+                </div>
+                <div v-else>
+                    <div v-for="item in cartItems" :key="item.id" class="neubrutalism p-4 mb-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold">{{item.name}}</h3>
+                            <button @click="removeFromCart(item)" class="text-sm">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                        <p class="text-lg">${{item.price}}</p>
+                    </div>
+                    <div class="mt-6">
+                        <div class="text-xl font-bold mb-4">
+                            Total: ${{cartTotal}}
+                        </div>
+                        <button @click="checkout" class="neubrutalism w-full py-3 text-center text-lg">
+                            Checkout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    cartOpen: false,
+                    cartItems: [],
+                    products: [
+                        {
+                            id: 1,
+                            name: "Neobrutalist Hoodie",
+                            description: "Limited edition hoodie with neon accents",
+                            price: 89.99,
+                            image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800"
+                        },
+                        {
+                            id: 2,
+                            name: "Cyber Cap",
+                            description: "Embroidered cap with LED trim",
+                            price: 34.99,
+                            image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=800"
+                        },
+                        {
+                            id: 3,
+                            name: "Digital Dreams Tee",
+                            description: "Glow-in-the-dark print t-shirt",
+                            price: 49.99,
+                            image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=800"
+                        }
+                    ]
+                }
+            },
+            computed: {
+                cartTotal() {
+                    return this.cartItems.reduce((total, item) => total + item.price, 0).toFixed(2)
+                }
+            },
+            methods: {
+                addToCart(product) {
+                    this.cartItems.push({...product})
+                    this.cartOpen = true
+                },
+                removeFromCart(item) {
+                    const index = this.cartItems.indexOf(item)
+                    if (index > -1) {
+                        this.cartItems.splice(index, 1)
+                    }
+                },
+                checkout() {
+                    if(this.cartItems.length === 0) {
+                        alert('Your cart is empty!')
+                        return
+                    }
+                    alert('Thank you for your purchase!')
+                    this.cartItems = []
+                    this.cartOpen = false
+                }
+            }
+        }).mount('#app')
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
